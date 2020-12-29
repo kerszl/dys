@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+
 import login_data
 """
 touch file "login_data.py"
@@ -39,6 +40,7 @@ NF_djs_CH=[]
 NOT_FAVORITE_DJS=[]
 
 JSON_DOWNLOADED='downloaded.json'
+YAML_SITE='site_download.yaml'
 
 NF_djs_files={
 'NF_djs_DH_file':'not_favorite_djs_dh.json',
@@ -50,7 +52,7 @@ NF_djs_files={
 def load_downloaded(file):        
     try:
         with open(file, 'r') as f:
-            download_files_=json.load(f)            
+            download_files_=json.load(f)
     except ValueError as e:                
         print ("Problem z plikiem "+file+" lub formatem json")
         print (e)        
@@ -86,6 +88,26 @@ def check_json_file():
         download_files=load_downloaded(MP3_SAVE_DIRECTORY+JSON_DOWNLOADED)
     return download_files
 
+def check_yaml_file (YAML_SITE):
+    file_yaml_exists=Path(YAML_SITE)
+    if not file_yaml_exists.exists():
+        print ("Nie ma pliku",YAML_SITE)
+        exit ()
+    with open(YAML_SITE, 'r') as f:            
+        download_files_=yaml.load(f,Loader=yaml.SafeLoader)    
+    for i in download_files_:
+        if len (download_files_[i]) !=2:
+            print ("Sprawdz: ",YAML_SITE)
+            exit ()
+            
+
+    
+
+def load_site_download (YAML_SITE):    
+    #bez try i tak wszystko prawie wczyta, wczesniej jest sprawdzanie
+    with open(YAML_SITE, 'r') as f:            
+        download_files_=yaml.load(f,Loader=yaml.SafeLoader)    
+    return download_files_
 
 def check_json_NF_djs_files():
     for i,file in NF_djs_files.items():        
@@ -136,8 +158,8 @@ def first_login():
 def read_site():    
     #z sesja chyba zmiana naglowaka nie dziala
     print ("Wczytuje:",MUSIC_SITE)
-    read_site=requests.get(MUSIC_SITE,cookies=cookie)
-    return read_site
+    read_site_=requests.get(MUSIC_SITE,cookies=cookie)
+    return read_site_
     #read_site=requests.get(SEARCH_SITE,cookies=cookie)
     #s=r.get(MUSIC_SITE)
     #print (s.request.headers)
@@ -146,7 +168,7 @@ def read_site():
 
 #---zgraj liste dj-ow z głownego panela
 def zgraj_liste_dj():
-    main_panel=bs(read_site.text,'html.parser')
+    main_panel=bs(read_site_.text,'html.parser')
     #nieaktualnne    
     #b=a.find("div",{"class":"mixes-list-wrapper clearfix"})
     main_panel=main_panel.find("div",{"class":"col-md-9 single-panel-wrapper"})
@@ -167,12 +189,13 @@ BAD_FILE_CHAR =[":",".","?",",","\\","/"]
 CAN_DOWNLOAD_FILE_HEADER=['audio/mpeg','application/octet-stream']
 
 def can_download_dj (mp3_file):
-    can_download=True
+    can_download="Nie znalazlem go w pliku"
     for i in NOT_FAVORITE_DJS:        
         string_compile='^'+i.lower()+'.*'                
-        a=re.search(string_compile,mp3_file.lower())        
-        if a:
-            can_download=False                  
+        nielubiany_dj=re.search(string_compile,mp3_file.lower())        
+        if nielubiany_dj:
+            #can_download=False
+            can_download=i
     return can_download
 
 #---glowna petla
@@ -197,7 +220,7 @@ def main_loop(djs_):
 
         link_download=mp3_site_download.a['href']
         #Odczekiwanie, żeby pomysleli, że to człowiek        
-        time_sleep=randrange(3,15)
+        time_sleep=randrange(3,15)        
         print (mp3_file_write_DIR)
         print ("Czekam",time_sleep,"sekund")        
         sleep(time_sleep)        
@@ -209,8 +232,10 @@ def main_loop(djs_):
             r = requests.get(link_download, allow_redirects=True, stream=True)
             #sprawdzamy czy mozna sciagnac
             #if (r.headers['Content-Type']=='audio/mpeg' or r.headers['Content-Type']=='application/octet-stream'):        
-            #if NOT_FAVORITE_DJS            
-            if can_download_dj(mp3_file_write):        
+            #if NOT_FAVORITE_DJS
+            nielubiany_dj=can_download_dj(mp3_file_write)
+            #Strasznie glupi warunek
+            if nielubiany_dj == "Nie znalazlem go w pliku":        
             
                 if r.headers['Content-Type'] in CAN_DOWNLOAD_FILE_HEADER:
                                     
@@ -234,14 +259,15 @@ def main_loop(djs_):
                 else:
                     print (link_download,"- to nie bezposredni plik")
             else:
-                print ("Nielubiany dj: ")
+                print ("Nielubiany dj: ",nielubiany_dj)
+
         else:
             print ("Sciagnalem wczesniej ten plik")
         print ("")
     if set_count==1:
-        print ('Sciagnalem',set_count,'set.')
+        print ('Sciagnalem',set_count,'set\n')
     else:
-        print ('Sciagnalem',set_count,'setow')
+        print ('Sciagnalem',set_count,'setow\n')
 
 
 def przetasuj (djs):    
@@ -276,18 +302,36 @@ def przetasuj (djs):
 #MUSIC_SITE="https://globaldjmix.com/style-mixes/deep-house"
 #MP3_SAVE_DIRECTORY='/mnt/e/!new/dys - sety/deep-house/'
 #--progressive house site
-MUSIC_SITE="https://globaldjmix.com/style-mixes/progressive-house"
-MP3_SAVE_DIRECTORY='/mnt/e/!new/dys - sety/progressive-house/'
+#MUSIC_SITE="https://globaldjmix.com/style-mixes/progressive-house"
+#MP3_SAVE_DIRECTORY='/mnt/e/!new/dys - sety/progressive-house/'
+MUSIC_SITE=""
+MP3_SAVE_DIRECTORY=""
+#MUSIC_DOWNLOAD_SITES={"ambient":["https://globaldjmix.com/style-mixes/ambient","/mnt/e/!new/dys - sety/ambient/"],
+#                      "chilout":["https://globaldjmix.com/style-mixes/chillout","/mnt/e/!new/dys - sety/chillout/"],
+#                      "deep-house":["https://globaldjmix.com/style-mixes/deep-house","/mnt/e/!new/dys - sety/deep-house/"],
+#                      "progressive-house":["https://globaldjmix.com/style-mixes/progressive-house","/mnt/e/!new/dys - sety/progressive-house/"],
+#                      }
+
+#MUSIC_DOWNLOAD_SITES={}
+
 
 #-------------------------------------------------------------------------------
-
+#zrobic logi, co kiedy sciagnalem
 #--------main program-------
-
+check_yaml_file (YAML_SITE)
+MUSIC_DOWNLOAD_SITES=load_site_download (YAML_SITE)
 check_json_NF_djs_files()
-download_files=check_json_file()
-cookie=first_login()
-read_site=read_site()
-djs=zgraj_liste_dj()
-djs=przetasuj(djs)
 
-main_loop(djs)
+cookie=first_login()
+
+
+
+for i in MUSIC_DOWNLOAD_SITES:
+#    print (i)
+    MUSIC_SITE=MUSIC_DOWNLOAD_SITES[i][0]
+    MP3_SAVE_DIRECTORY=MUSIC_DOWNLOAD_SITES[i][1]
+    download_files=check_json_file()
+    read_site_=read_site()
+    djs=zgraj_liste_dj()
+    djs=przetasuj(djs)
+    main_loop(djs)
