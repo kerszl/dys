@@ -249,63 +249,59 @@ def main_loop(djs_,genre):
         mp3_site_download=mp3_site_download.find("div",{"class":"download_source"})
         mp3_site_download=mp3_site_download.find("div",{"class":"link-wrapper-zippy"})
 
-                
+        try:        
+            link_download=mp3_site_download.a['href']
+        except ValueError as e:                
+            print ("Cos poszlo nie tak ze sciaganiem")
         
         #Odczekiwanie, żeby pomysleli, że to człowiek        
         time_sleep=randrange(3,15)        
         print (mp3_file_write_DIR)
         
         
-        if mp3_site_download is not None:
-            link_download=mp3_site_download.a['href']            
-            #FILE_EXISTS=Path(mp3_file_write_DIR)
-            if not mp3_file_write in download_files:
-            #if not FILE_EXISTS.exists():        
-                r = requests.get(link_download, allow_redirects=True, stream=True)
-                #sprawdzamy czy mozna sciagnac
-                #if (r.headers['Content-Type']=='audio/mpeg' or r.headers['Content-Type']=='application/octet-stream'):        
-                #if NOT_FAVORITE_DJS
-                nielubiany_dj=can_download_dj(mp3_file_write)
-                #Strasznie glupi warunek
-                if nielubiany_dj == "Nie znalazlem go w pliku":        
-                
-                    if r.headers['Content-Type'] in CAN_DOWNLOAD_FILE_HEADER and 'content-length' in r.headers:                                    
-                                        
-                        total_size_in_bytes= int(r.headers['content-length'])
-                        block_size = 1024 #1 Kibibyte
-                        progress_bar = tqdm(total=total_size_in_bytes, unit='iB', unit_scale=True)
+        #FILE_EXISTS=Path(mp3_file_write_DIR)
+        if not mp3_file_write in download_files:
+        #if not FILE_EXISTS.exists():        
+            r = requests.get(link_download, allow_redirects=True, stream=True)
+            #sprawdzamy czy mozna sciagnac
+            #if (r.headers['Content-Type']=='audio/mpeg' or r.headers['Content-Type']=='application/octet-stream'):        
+            #if NOT_FAVORITE_DJS
+            nielubiany_dj=can_download_dj(mp3_file_write)
+            #Strasznie glupi warunek
+            if nielubiany_dj == "Nie znalazlem go w pliku":        
+            
+                if r.headers['Content-Type'] in CAN_DOWNLOAD_FILE_HEADER:
+                                    
+                    total_size_in_bytes= int(r.headers['content-length'])
+                    block_size = 1024 #1 Kibibyte
+                    progress_bar = tqdm(total=total_size_in_bytes, unit='iB', unit_scale=True)
 
-                        #print ("Zapisuje: ",mp3_file_write)
-                        print ("\nSciagam z:",link_download)
-                        with open(mp3_file_write_DIR, 'wb') as file:    
-                            for data in r.iter_content(block_size):
-                                progress_bar.update(len(data))        
-                                file.write(data)
-                        progress_bar.close()
-                        if total_size_in_bytes != 0 and progress_bar.n != total_size_in_bytes:
-                            print("ERROR: cos poszło zle przy zapisie")
-                        else:                
-                            download_files[mp3_file_write]=datetime.now().strftime("%d%m%Y")
-                            save_downloaded(download_files,MP3_SAVE_DIRECTORY+JSON_DOWNLOADED)
-                            global set_count
-                            set_count+=1                        
-                            #downloaded_report.append(mp3_file_write)
-                            downloaded_report[mp3_file_write]=genre
-                            print ("Czekam",time_sleep,"sekund")        
-                            sleep(time_sleep)                                        
-                    else:
-                        if r.headers['Content-Type'] not in CAN_DOWNLOAD_FILE_HEADER:
-                            print (link_download,"- to nie bezposredni plik")
-                        else:                    
-                            print (link_download,"- problem z okresleniem wielkosci")
-                                                                            
+                    #print ("Zapisuje: ",mp3_file_write)
+                    print ("\nSciagam z:",link_download)
+                    with open(mp3_file_write_DIR, 'wb') as file:    
+                        for data in r.iter_content(block_size):
+                            progress_bar.update(len(data))        
+                            file.write(data)
+                    progress_bar.close()
+                    if total_size_in_bytes != 0 and progress_bar.n != total_size_in_bytes:
+                        print("ERROR: cos poszło zle przy zapisie")
+                    else:                
+                        download_files[mp3_file_write]=datetime.now().strftime("%d%m%Y")
+                        save_downloaded(download_files,MP3_SAVE_DIRECTORY+JSON_DOWNLOADED)
+                        global set_count
+                        set_count+=1                        
+                        #downloaded_report.append(mp3_file_write)
+                        downloaded_report[mp3_file_write]=genre
+                        print ("Czekam",time_sleep,"sekund")        
+                        sleep(time_sleep)                                        
                 else:
-                    print ("Nielubiany dj: ",nielubiany_dj)
-
+                    print (link_download,"- to nie bezposredni plik")
             else:
-                print ("Sciagnalem wczesniej ten plik")
+                print ("Nielubiany dj: ",nielubiany_dj)
+
         else:
-            print ("Nie widze linku")
+            print ("Sciagnalem wczesniej ten plik")
+    
     
 
 def przetasuj (djs):    
