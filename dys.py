@@ -186,7 +186,13 @@ def first_login():
 def read_site():    
     #z sesja chyba zmiana naglowaka nie dziala
     print ("Wczytuje:",MUSIC_SITE)
-    read_site_=requests.get(MUSIC_SITE,cookies=cookie)
+    try:
+        read_site_=requests.get(MUSIC_SITE,cookies=cookie)
+    except requests.exceptions.RequestException as e:  # This is the correct syntax
+        print ("Nie moge się polaczyć z ",MUSIC_SITE)
+        raise SystemExit(e)
+
+    
     return read_site_
     #read_site=requests.get(SEARCH_SITE,cookies=cookie)
     #s=r.get(MUSIC_SITE)
@@ -386,12 +392,14 @@ MP3_SAVE_DIRECTORY=""
 
 check_yaml_file (YAML_SITE)
 MUSIC_DOWNLOAD_SITES=load_site_download (YAML_SITE)
+
 check_json_F_djs_files()
 check_json_NF_djs_files()
 remove_favorite_from_not_favorite()
 #usun lubianych dj-ow z nielubianej listy
 
 cookie=first_login()
+
 
 for i in MUSIC_DOWNLOAD_SITES:
     MUSIC_SITE=MUSIC_DOWNLOAD_SITES[i][0]
