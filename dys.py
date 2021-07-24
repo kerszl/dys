@@ -403,7 +403,7 @@ remove_favorite_from_not_favorite()
 #usun lubianych dj-ow z nielubianej listy
 
 cookie=first_login()
-exit ()
+
 
 
 for i in MUSIC_DOWNLOAD_SITES:
