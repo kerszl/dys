@@ -405,6 +405,7 @@ remove_favorite_from_not_favorite()
 cookie=first_login()
 exit ()
 
+
 for i in MUSIC_DOWNLOAD_SITES:
     MUSIC_SITE=MUSIC_DOWNLOAD_SITES[i][0]
     MP3_SAVE_DIRECTORY=MUSIC_DOWNLOAD_SITES[i][1]
