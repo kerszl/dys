@@ -206,19 +206,43 @@ def read_site():
 
 #---zgraj liste dj-ow z głownego panela
 def zgraj_liste_dj():
-    main_panel=bs(read_site_.text,'html.parser')
+    main_panel=bs(read_site_.text,'html.parser')    
     #nieaktualnne    
     #b=a.find("div",{"class":"mixes-list-wrapper clearfix"})
-    main_panel=main_panel.find("div",{"class":"col-md-9 single-panel-wrapper"})
-    main_panel=main_panel.find_all("div",{"class":"mix-title"})    
+    #main_panel=main_panel.find("div",{"class":"col-md-9 single-panel-wrapper"})
+    #main_panel=main_panel.find("div",{"class":"single-panel col-md-9 single-panel-wrapper"})
+    main_panel=main_panel.find("div",{"class":"mixes-list-wrapper clearfix"})    
+    #main_panel=main_panel.find_all("div",{"class":"mix-title"})    
+    main_panel=main_panel.find_all('a',href=True)
+    #print (main_panel[1].get('href'))
+
+    
+    
+#    for i in main_panel:
+#        k=i.get('href').strip()
+#        if (k.find('javascript:void(0)')):      
+#            j=i.text.strip()      
+#            print (j,'\n',k)
+            #k=i.text
+            #print (k)
+
+
+        #k=i.a['href'].strip()
+        #djs[k]=j
+    
+    
 
     djs={}
-    #print ("Nowe sety:")
+#    for i in main_panel:
+#        j=i.text.strip()        
+#        k=i.a['href'].strip()
+#        djs[k]=j
     for i in main_panel:
-        j=i.text.strip()        
-        k=i.a['href'].strip()
-        djs[k]=j
-    #   print (j,k)
+            k=i.get('href').strip()
+            if (k.find('javascript:void(0)')):      
+                j=i.text.strip()  
+                djs[k]=j
+                #print (j,'\n',k)
     return djs
 
 
