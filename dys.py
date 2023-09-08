@@ -172,7 +172,7 @@ login_headers = {
     'x-requested-with': 'XMLHttpRequest',
     'Content-Type': 'application/x-www-form-urlencoded', # its urlencoded instead of form-data
     #'User-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.129 Safari/537.36',
-    'User-agent':'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:85.0) Gecko/20100101 Firefox/85.0',
+    'User-agent':'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:85.0) Gecko/20100101 Firefox/86.0',
     
     
 }
@@ -189,11 +189,11 @@ def first_login():
 
 def read_site():    
     #z sesja chyba zmiana naglowaka nie dziala
-    print ("Wczytuje:",MUSIC_SITE)
+    print ("Wczytuję:",MUSIC_SITE)
     try:
         read_site_=requests.get(MUSIC_SITE,cookies=cookie)
     except requests.exceptions.RequestException as e:  # This is the correct syntax
-        print ("Nie moge się polaczyć z ",MUSIC_SITE)
+        print ("Nie moge się polaczyć z: ",MUSIC_SITE)
         raise SystemExit(e)
 
     
@@ -271,7 +271,7 @@ def main_loop(djs_,genre):
         #set_site_links_ORIG=set_site_links.replace("/livedjsets/","")
 
         set_site_links=SITE+set_site_links
-        #set_site_links=SITE+list(djs.keys())[0]
+        
         for i in BAD_FILE_CHAR:
             mp3_file_write=mp3_file_write.replace(i,"_")
 
@@ -283,16 +283,27 @@ def main_loop(djs_,genre):
 
         mp3_site_download=mp3_site_download.find("div",{"class":"download_source"})
         mp3_site_download=mp3_site_download.find("div",{"class":"link-wrapper-zippy"})
-
-                
         
+        link_download=mp3_site_download.a['href']
+
+        nowa_strona_link="box.globaldjmix.com/"
+        
+        
+        if re.search(nowa_strona_link,link_download):
+            mp3_site_download=requests.get(link_download)
+            mp3_site_download=bs(mp3_site_download.text,'html.parser')
+            mp3_site_download=mp3_site_download.find("a",{"class":"btn btn-success"})
+            link_download=mp3_site_download['href']
+            
+                    
         #Odczekiwanie, żeby pomysleli, że to człowiek        
         time_sleep=randrange(3,15)        
         print (mp3_file_write_DIR)
         
         
-        if mp3_site_download is not None:
-            link_download=mp3_site_download.a['href']            
+        #if mp3_site_download is not None:
+        if link_download is not None:        
+            #link_download=mp3_site_download.a['href']            
             #FILE_EXISTS=Path(mp3_file_write_DIR)
             if not mp3_file_write in download_files:
             #if not FILE_EXISTS.exists():        
