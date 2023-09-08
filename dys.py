@@ -239,6 +239,7 @@ def zgraj_liste_dj():
 #        djs[k]=j
     for i in main_panel:
             k=i.get('href').strip()
+            #wyeliminowujemy javascript
             if (k.find('javascript:void(0)')):      
                 j=i.text.strip()  
                 djs[k]=j
